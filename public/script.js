@@ -6,10 +6,13 @@ const hangUpButton = document.getElementById("hangUp");
 let localStream;
 let peerConnection;
 
-// Get local network IP dynamically
-const localIP = window.location.hostname;
-const socket = new WebSocket('wss://webrtc-1ch8.onrender.com:3000');
+// Create WebSocket connection
+const socket = new WebSocket('wss://your-app-name.onrender.com:3000');
 
+// Wait for the WebSocket connection to be established before sending any messages
+socket.addEventListener('open', () => {
+    console.log('WebSocket connection established');
+});
 
 // WebRTC Configuration with STUN Server
 const config = {
@@ -45,10 +48,16 @@ async function handleMessage(message) {
 // Create and configure Peer Connection
 function createPeerConnection() {
     peerConnection = new RTCPeerConnection(config);
-    
+
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            socket.send(JSON.stringify({ type: "ice-candidate", candidate: event.candidate }));
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: "ice-candidate", candidate: event.candidate }));
+            } else {
+                socket.addEventListener('open', () => {
+                    socket.send(JSON.stringify({ type: "ice-candidate", candidate: event.candidate }));
+                });
+            }
         }
     };
 
