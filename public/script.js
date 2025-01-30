@@ -8,7 +8,8 @@ let peerConnection;
 
 // Get local network IP dynamically
 const localIP = window.location.hostname;
-const socket = new WebSocket(`ws://${localIP}:3000`);
+const socket = new WebSocket('wss://webrtc-1ch8.onrender.com:3000');
+
 
 // WebRTC Configuration with STUN Server
 const config = {

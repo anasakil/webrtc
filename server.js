@@ -1,9 +1,14 @@
 const WebSocket = require("ws");
 const express = require("express");
-const http = require("http");
 
 const app = express();
-const server = http.createServer(app);
+
+// Create an HTTP server
+const server = app.listen(process.env.PORT || 3000, () => {
+    console.log(`Server running on port ${process.env.PORT || 3000}`);
+});
+
+// Create a WebSocket server that uses the same server instance
 const wss = new WebSocket.Server({ server });
 
 let clients = [];
@@ -29,23 +34,3 @@ wss.on("connection", (socket) => {
 
 // Serve static files (HTML, CSS, JS)
 app.use(express.static(__dirname + "/public"));
-
-// Start server on your local network
-const PORT = 3000;
-server.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running at http://${getLocalIP()}:${PORT}/`);
-});
-
-// Function to get local network IP
-function getLocalIP() {
-    const os = require("os");
-    const interfaces = os.networkInterfaces();
-    for (const iface of Object.values(interfaces)) {
-        for (const ifaceDetail of iface) {
-            if (ifaceDetail.family === "IPv4" && !ifaceDetail.internal) {
-                return ifaceDetail.address;
-            }
-        }
-    }
-    return "127.0.0.1";
-}
