@@ -9,7 +9,7 @@ let peerConnection;
 // Create WebSocket connection
 const socket = new WebSocket('wss://webrtc-1ch8.onrender.com:3000');
 
-// Wait for the WebSocket connection to be established before sending any messages
+// Wait for the WebSocket connection to be established
 socket.addEventListener('open', () => {
     console.log('WebSocket connection established');
 });
@@ -68,15 +68,31 @@ function createPeerConnection() {
 
 // Start the video call
 async function startCall() {
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    localVideo.srcObject = localStream;
+    // Wait until WebSocket is open
+    if (socket.readyState !== WebSocket.OPEN) {
+        socket.addEventListener('open', async () => {
+            await sendOffer();
+        });
+    } else {
+        await sendOffer();
+    }
+}
 
-    createPeerConnection();
-    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+// Send the offer to the WebSocket server
+async function sendOffer() {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localVideo.srcObject = localStream;
 
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-    socket.send(JSON.stringify({ type: "offer", offer }));
+        createPeerConnection();
+        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        socket.send(JSON.stringify({ type: "offer", offer }));
+    } catch (error) {
+        console.error('Error starting the call:', error);
+    }
 }
 
 // Hang up the call
