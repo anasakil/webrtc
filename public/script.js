@@ -7,7 +7,7 @@ let localStream;
 let peerConnection;
 
 // Create WebSocket connection
-const socket = new WebSocket('wss://your-app-name.onrender.com:3000');
+const socket = new WebSocket('wss://webrtc-1ch8.onrender.com:3000');
 
 // Wait for the WebSocket connection to be established before sending any messages
 socket.addEventListener('open', () => {
